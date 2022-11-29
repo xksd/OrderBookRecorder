@@ -1,6 +1,6 @@
-# ob_recorder
+# Order Book Recorder
 
-Collects Order Book snapshots over a period of time.
+Records Order Book snapshots over a period of time into CSV files.
 
 Works for USDT pairs on Binance.
 
