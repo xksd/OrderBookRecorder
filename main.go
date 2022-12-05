@@ -1,73 +1,97 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"sync"
 	"time"
 
+	"github.com/xksd/OrderBookRecorder/data"
 	"github.com/xksd/OrderBookRecorder/exchange"
+	"github.com/xksd/OrderBookRecorder/storage"
 	"github.com/xksd/OrderBookRecorder/utils"
 )
 
 func main() {
 	// Initialize the settings
-	// .Prod, .UserSymbolsList []string, .ApiKey, .ApiSecret
-	// settings.
-	settings := utils.GetSettings()
-	// The build is PROD or DEV?
-	PROD := settings.Prod
+	settings := utils.ReadSettings()
 	// List of supported Symbols
-	symbolsList := exchange.CreateListOfSymbols(settings.UserSymbolsList...)
+	symbolsList := data.CreateListOfSymbols(settings.UserSymbolsList...)
+	// Warm Introduction
+	utils.PrintIntroduction(symbolsList, settings.Prod)
 
-	// Get number of cpu cores to calculate possible number of get requests
-	// couCoresCount := runtime.NumCPU()
-	// utils.PrintIntroduction(symbolsList, couCoresCount, PROD)
-
-	// allOrderBooksAggregated
-	// Prepare empty structs for ObSnapshots for all symbols for 1 day
-	var allObAggr exchange.AllDailyAggregations
+	// Fill the Buffer with the first OrderBook Snapshots for each symbol,
+	// it will used for the following WebSocket updates.
+	var allObBuffer data.AllObBuffer
 
 	for _, symbol := range symbolsList {
-		var symbolDailySnapshots exchange.ObSnapshots_SymbolDailyAggr
-		symbolDailySnapshots.Symbol = symbol
-		allObAggr = append(allObAggr, symbolDailySnapshots)
+		// Get Starting OrderBook Snapshots
+		obResp := exchange.GetObResponse(symbol, 0)
+
+		// Convert ObResponse to SymbolObSnapshot
+		ob := data.CreateSymbolObSnapshot(&obResp)
+
+		// Add snapshot of current symbol to the Buffer
+		allObBuffer.Append(ob)
+
 	}
 
-	// Start execution
 	// Loop ticker
-	ticker := time.NewTicker(5 * time.Second)
-	done := make(chan bool)
+	ticker := time.NewTicker(time.Duration(settings.Timeframe) * time.Second)
+	// Channels for Websocket tick updates and close command
+	wsCh := make(chan exchange.WsObResponse)
+	wsChDone := make(chan bool)
+	defer close(wsCh)
+	defer close(wsChDone)
 
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	// WebSocket Tick Data Update.
+	// Using allObBuffer to buffer incoming ws updates,
+	// so the buffer is always ready to be saved to csv when ticker signals.
+
+	// Create URL for Websocket stream, to tell what symbols to receive.
+	wsUrl := exchange.CreateWsUrl(symbolsList)
+
+	// Start WebSocket stream to get updates in a loop,
+	// each update sent to channel.
+	go func() {
+		exchange.GetUpdate(wsCh, wsChDone, wsUrl)
+	}()
+
+	// Receive signals from channels:
+	// update from websocket or stop signal
 	go func() {
 		for {
 			select {
-			case <-done:
+			case <-wsChDone:
+				ticker.Stop()
 				return
-			case t := <-ticker.C:
-				fmt.Println("Tick at", t)
-				// aggregate ObSnaphots for symbol for current day
-				for _, symbol := range symbolsList {
-					s := symbol
-					go func() {
-						// var ob exchange.ObSnapshot
-						// Get Order Book
-						ob := exchange.GetObSnapshot(s, 5)
-						// Add order book to all
-						allObAggr.Add(s, ob)
-					}()
+			case wsTick := <-wsCh:
+				// Update the Buffer with new tick data
+				err := allObBuffer.UpdateFromWsTick(wsTick)
+				if err != nil {
+					log.Fatal(err)
 				}
 			}
 		}
 	}()
 
-	if !PROD {
-		time.Sleep(10 * time.Second)
-	}
+	// Write to CSV-file from AllObBuffer single ob, at ticker signal.
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				for _, ob := range allObBuffer {
+					if err := storage.SaveToCSV(&ob, settings.CSVFolder); err != nil {
+						log.Fatal("Function SaveToCSV Failed from MAIN file")
+						log.Fatal("Reason:", err)
+					}
+				}
+			}
+		}
+	}()
 
-	ticker.Stop()
-	done <- true
-
-	fmt.Println("\nAFTER in main():")
-	allObAggr.Print()
-	fmt.Println()
+	wg.Wait()
 
 }

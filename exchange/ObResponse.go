@@ -7,17 +7,22 @@ import (
 	"log"
 	"net/http"
 	"runtime"
-	"time"
 )
 
-type ObSnapshot struct {
+// Getting first Orderbook snapshot
+// using http-response to Binance API
+
+// Struct to unmarshall response from Binance
+type ObResponse struct {
+	Symbol    string
 	Timestamp int64      `json:"E"`
 	Bids      [][]string `json:"bids"`
 	Asks      [][]string `json:"asks"`
 }
 
-func GetObSnapshot(symbol string, limitOfObLevels int) ObSnapshot {
-	fmt.Println("Started ObSnaphost for   --- ", symbol)
+// Request Orderbook snapshot from Binance
+// params: symbol string, limitOfObLevels (0 = no limits)
+func GetObResponse(symbol string, limitOfObLevels int) ObResponse {
 	// Define URL for Get request
 	var url string = binanceUrls["api_base"] + binanceUrls["order_book"] +
 		"?symbol=" + symbol
@@ -40,23 +45,10 @@ func GetObSnapshot(symbol string, limitOfObLevels int) ObSnapshot {
 		log.Fatal(err)
 	}
 
-	var resUnmarshalled ObSnapshot
-	json.Unmarshal(resData, &resUnmarshalled)
+	var obResp ObResponse
+	json.Unmarshal(resData, &obResp)
 
-	fmt.Println("Returned ObSnapshot for  --- ", symbol)
-	// fmt.Println(resUnmarshalled.Bids[0])
+	obResp.Symbol = symbol
 
-	return resUnmarshalled
-
-}
-
-func (ob *ObSnapshot) Print() {
-	fmt.Println()
-	fmt.Println("Timestamp         ", time.UnixMilli(ob.Timestamp))
-	fmt.Println("Timestamp (unix)  ", ob.Timestamp)
-
-	fmt.Println("\nBids\n", len(ob.Bids))
-	fmt.Println(ob.Bids)
-	fmt.Println("\nAsks\n", len(ob.Asks))
-	fmt.Println(ob.Asks)
+	return obResp
 }

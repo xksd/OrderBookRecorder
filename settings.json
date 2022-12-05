@@ -1,4 +1,6 @@
 {
+    "timeframeInSeconds": 1,
+    "csvFolder": "./csv_files",
     "symbols": [
         "BTC",
         "ETH",
@@ -15,6 +17,13 @@
         "CHZ",
         "NEAR",
         "VET",
-        "FLOW"
+        "FLOW",
+        "FLM",
+        "GMT",
+        "SNX",
+        "ROSE",
+        "DYDX",
+        "APE",
+        "ONE"
     ]
 }

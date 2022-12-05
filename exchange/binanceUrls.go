@@ -1,8 +1,8 @@
 package exchange
 
 var binanceUrls = map[string]string{
-	"api_base": "https://fapi.binance.com/fapi/v1",
-	// "account_status":  "/sapi/v1/account/status",
+	"api_base":        "https://fapi.binance.com/fapi/v1",
+	"account_status":  "/sapi/v1/account/status",
 	"get_server_time": "/time",
 
 	// FUTURES Market Data

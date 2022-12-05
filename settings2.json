@@ -1,0 +1,5 @@
+{
+    "timeframeInSeconds": 1,
+    "csvFolder": "./csv_files",
+    "symbols": ["BTC", "SOL", "ETH"]
+}
