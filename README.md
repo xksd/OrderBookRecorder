@@ -7,12 +7,12 @@ Currently works for USDT pairs on Binance.
 ## Settings
 
 Open settings.json and fill in desired symbols.
-Do not write "USDT", program does that automatically. Please list only base pairs.
+Please list only base pairs. Do not write "USDT", program adds it automatically.
 
 (i) Api Keys are not required for current functionality, made it just for the future.
-To fill in Api Key: Open the .env file in the same folder as your executable is in.
+To fill in Api Key: Follow .env_example and create .env file in the same folder.
 
-## Output file example
+## Output file name example
 
 **2022_11_30\_\_BTCUSDT.csv**
 
@@ -23,58 +23,3 @@ To fill in Api Key: Open the .env file in the same folder as your executable is 
 ```
 
 </br>
-
-## Pipeline:
-
-```
-(once) ObResponse -> SymbolObSnapshot ->
-                                        -> AllSymbolsObSnapshots -> csv
-(tick)                   ObWsResponse ->
-```
-
--   **ObResponse**
-    </br>Response from http-request to Binance
-    </br>
-
--   **SymbolObSnapshot** {
-    </br> &nbsp;&nbsp;&nbsp;&nbsp;Symbol string
-    </br> &nbsp;&nbsp;&nbsp;&nbsp;Date int (UnixMilli)
-    </br> &nbsp;&nbsp;&nbsp;&nbsp;Data []strings: [timestamp, side, price, qty]
-    </br>}
-    </br>Formatted ObResponse, prepared for recording to csv
-    </br>
-
--   **AllSymbolsObSnapshots** {
-    </br>&nbsp;&nbsp;&nbsp;&nbsp;[]SymbolObSnapshot
-    </br>}
-    </br>Slice of SymbolObSnapshot
-
-</br>
-
-## Pseudo-code
-
-```
-generate empty AllSymbolsObResponse from listOfSymbols
-
-for symbol in symbolsList {
-    goroutines A:
-    (once app starts)
-        - get OrderbookTemplate from http api call
-
-    goroutines B:
-    (once go A finished)
-        (at each tick, ws)
-        - get ObWsResponse
-            - parse the message
-        - get previous SymbolObSnapshot
-        - for each price level in ObWsResponse:
-            if quantity != 0 {
-                update SymbolObSnapshot:
-                    the price level with new values
-            } else {
-                update SymbolObSnapshot:
-                    remove price level
-            }
-        - WriteAll as new lines to .csv file
-}
-```

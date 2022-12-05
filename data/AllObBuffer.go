@@ -24,6 +24,8 @@ func (allObBuffer *AllObBuffer) UpdateFromWsTick(wsTick exchange.WsObResponse) e
 			// Save current SymbolObSnapshot to a local variable
 			ob := (*allObBuffer)[i]
 
+			(*allObBuffer)[i].Timestamp = wsTick.Data.Timestamp
+
 			// Update Ob with passed Ws update
 			if err := ob.Bids.UpdatePriceLevelsFromWsTick(&wsTick.Data.Bids, "bid"); err != nil {
 				return errors.New("Error updating Bids" + fmt.Sprint(err))
