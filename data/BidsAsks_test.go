@@ -57,7 +57,7 @@ func TestUpdatePriceLevelsFromWsTick(t *testing.T) {
 	{
 		// Initialize a variable containing a fake update from WebSocket
 		wsTick := exchange.WsObResponse{
-			Symbol: "btcusdt@depth",
+			Symbol: "BTCUSDT",
 			Data: exchange.WsObResponseData{
 				Symbol:               "BTCUSDT",
 				EventType:            "depthUpdate",

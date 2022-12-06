@@ -1,29 +1,5 @@
 {
     "timeframeInSeconds": 1,
     "csvFolder": "./csv_files",
-    "symbols": [
-        "BTC",
-        "ETH",
-        "SOL",
-        "MATIC",
-        "1000SHIB",
-        "DOGE",
-        "DOT",
-        "TRX",
-        "UNI",
-        "LINK",
-        "ATOM",
-        "ALGO",
-        "CHZ",
-        "NEAR",
-        "VET",
-        "FLOW",
-        "FLM",
-        "GMT",
-        "SNX",
-        "ROSE",
-        "DYDX",
-        "APE",
-        "ONE"
-    ]
+    "symbols": ["BTC", "SOL", "ETH"]
 }

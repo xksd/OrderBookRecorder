@@ -52,7 +52,6 @@ func (ba *BidsAsks) UpdatePriceLevelsFromWsTick(wsTickBidsAsks *[][]string, side
 	for i := range *wsTickBidsAsks {
 		// Convert strings from Websocket response to float64 numbers
 		newPrice, newQuantity := convertPriceQuantityFromStringToFloat((*wsTickBidsAsks)[i][0], (*wsTickBidsAsks)[i][1])
-
 		// Find index of price level that needs an update
 		priceLevelIndex := ba.findPriceLevelIndex(newPrice, side)
 

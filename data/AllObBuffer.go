@@ -22,15 +22,15 @@ func (allObBuffer *AllObBuffer) UpdateFromWsTick(wsTick exchange.WsObResponse) e
 	for i := range *allObBuffer {
 		if (*allObBuffer)[i].Symbol == wsTick.Symbol {
 			// Save current SymbolObSnapshot to a local variable
-			ob := (*allObBuffer)[i]
+			// ob := (*allObBuffer)[i]
 
 			(*allObBuffer)[i].Timestamp = wsTick.Data.Timestamp
 
 			// Update Ob with passed Ws update
-			if err := ob.Bids.UpdatePriceLevelsFromWsTick(&wsTick.Data.Bids, "bid"); err != nil {
+			if err := (*allObBuffer)[i].Bids.UpdatePriceLevelsFromWsTick(&wsTick.Data.Bids, "bid"); err != nil {
 				return errors.New("Error updating Bids" + fmt.Sprint(err))
 			}
-			if err := ob.Asks.UpdatePriceLevelsFromWsTick(&wsTick.Data.Bids, "ask"); err != nil {
+			if err := (*allObBuffer)[i].Asks.UpdatePriceLevelsFromWsTick(&wsTick.Data.Asks, "ask"); err != nil {
 				return errors.New("Error updating Asks" + fmt.Sprint(err))
 
 			}
