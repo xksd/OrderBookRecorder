@@ -19,7 +19,7 @@ To fill in Api Key: Follow .env_example and create .env file in the same folder.
 ```
 [timestamp, side, price, quantity],
 [timestamp, side, price, quantity],
-[...]
+[...] 
 ```
 
 </br>
