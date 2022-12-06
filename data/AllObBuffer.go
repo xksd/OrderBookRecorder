@@ -21,8 +21,6 @@ func (allObBuffer *AllObBuffer) UpdateFromWsTick(wsTick exchange.WsObResponse) e
 	// Find corresponding ob.Symbol in Buffer
 	for i := range *allObBuffer {
 		if (*allObBuffer)[i].Symbol == wsTick.Symbol {
-			// Save current SymbolObSnapshot to a local variable
-			// ob := (*allObBuffer)[i]
 
 			(*allObBuffer)[i].Timestamp = wsTick.Data.Timestamp
 
